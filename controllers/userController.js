@@ -3,6 +3,7 @@ const {User, Notepad} = require('../models');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const validate = require('../middleware/validateSession');
+const validateAdmin = require('../middleware/validateAdmin');
 
 router.get('/test', (req, res) => {
     res.send('testing user controller');
@@ -16,7 +17,7 @@ router.post('/register', (req, res) => {
         isAdmin: req.body.isAdmin
     })
     .then(user => {
-        let token = jwt.sign({id: user.id}, process.env.SECRET, {expiresIn: '1d'})
+        let token = jwt.sign({id: user.id, isAdmin: user.isAdmin}, process.env.SECRET, {expiresIn: '1d'})
         res.send({user, token})
         //ADD A BLANK NOTEPAD BY DEFAULT
         Notepad.create({notes: req.body.notes, userId: user.id})
@@ -43,7 +44,7 @@ router.post('/login', (req, res) => {
             })
 
             function generateToken(user){
-                let token = jwt.sign({id: user.id}, process.env.SECRET, {expiresIn: '1d'});
+                let token = jwt.sign({id: user.id, isAdmin: user.isAdmin}, process.env.SECRET, {expiresIn: '1d'});
                 res.send({message:`welcome, ${user.userName}`, user, token})
             }
 
@@ -57,6 +58,21 @@ router.post('/login', (req, res) => {
 router.get('/', validate, (req, res) => {
     User.findAll({ where: {id: req.user.id},
         include: ["checklist", "notepad"]
+    }).then(foundUser => res.status(200).json({message: 'user found', foundUser}))
+    .catch(err => res.status(500).json({message: 'user not found', error: err}))
+})
+
+//ADMIN ACCESS LIST OF USERS
+router.get('/users', validateAdmin, (req, res) => {
+    User.findAll()
+    .then(users => res.status(200).json({message: 'all users', users}))
+    .catch(err => res.status(500).json({message: 'users not found', error: err}))
+})
+
+//ADMIN ACCESS SPECIFIC USERS
+router.get('/users/:username', validateAdmin, (req, res) => {
+    User.findAll({ where: {userName: req.params.username},
+        include: ["checklist", "notepad", "logEntries"]
     }).then(foundUser => res.status(200).json({message: 'user found', foundUser}))
     .catch(err => res.status(500).json({message: 'user not found', error: err}))
 })
