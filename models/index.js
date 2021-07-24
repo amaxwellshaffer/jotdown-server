@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize');
 
-const sequelize = new Sequelize("jotDown", "postgres", "password", {
+
+const sequelize = new Sequelize(process.env.DB_NAME, "postgres", process.env.DB_PASSWORD, {
     dialect: 'postgres', 
     host: 'localhost',
     logging: false,

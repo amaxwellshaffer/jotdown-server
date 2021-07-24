@@ -57,7 +57,7 @@ router.post('/login', (req, res) => {
 //GET A USERS ITEMS
 router.get('/', validate, (req, res) => {
     User.findAll({ where: {id: req.user.id},
-        include: ["checklist", "notepad"]
+        include: ["checklist", "notepad", "logEntries"]
     }).then(foundUser => res.status(200).json({message: 'user found', foundUser}))
     .catch(err => res.status(500).json({message: 'user not found', error: err}))
 })
