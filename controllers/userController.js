@@ -20,7 +20,7 @@ router.post('/register', (req, res) => {
         let token = jwt.sign({id: user.id, isAdmin: user.isAdmin}, process.env.SECRET, {expiresIn: '1d'})
         res.send({user, token})
         //ADD A BLANK NOTEPAD BY DEFAULT
-        Notepad.create({notes: req.body.notes, userId: user.id})
+        Notepad.create({notes: 'Add notes here', userId: user.id})
         .then(update => res.status(200).json({message: 'notepad updated', update}))
         .catch(err => res.status(500).json({message: 'notepad not updated', err}))
     })
